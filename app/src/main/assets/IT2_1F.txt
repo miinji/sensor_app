@@ -1,0 +1,2 @@
+# MAC, X, Y, frequency, remark
+00:00:00:00:00  10  10  2437  116
