@@ -47,13 +47,13 @@ public class ImageModule implements View.OnTouchListener{
         // 크기을 먼저 불러와서 크기를 줄인다.
         options.inJustDecodeBounds = true;
         // bound 만 읽어옴
-        BitmapFactory.decodeResource(activity.getResources(), R.raw.it2_1f, options);
+        BitmapFactory.decodeResource(activity.getResources(), R.raw.knu_library_1f, options);
         img_h = options.outHeight;
         img_w = options.outWidth;
 
         // Load map image
         InputStream inputStream;
-        inputStream = activity.getApplicationContext().getResources().openRawResource(R.raw.it2_1f);
+        inputStream = activity.getApplicationContext().getResources().openRawResource(R.raw.knu_library_1f);
         BitmapRegionDecoder decoder = null;
         try {
             decoder = BitmapRegionDecoder.newInstance(inputStream, false);
@@ -62,7 +62,7 @@ public class ImageModule implements View.OnTouchListener{
         }
         Rect rect = new Rect(0, 0, img_h, img_w); // 이 사각형 안에 있는 이미지를 읽어올것이다.
         options.inJustDecodeBounds = false; // 이미지 전체를 읽을 것이다.
-        options.inSampleSize = 2; //이미지를 두 배로 압축해서 읽어오자
+        options.inSampleSize = 4; //이미지를 두 배로 압축해서 읽어오자
 
         bitmap = decoder.decodeRegion(rect, options); //원본
         bitmap_altered = Bitmap.createBitmap(bitmap.getHeight(), bitmap.getWidth(), bitmap.getConfig());

@@ -18,7 +18,7 @@ public class WifiAPManager {
         String line;
 
         try {
-            InputStream inputStream = context.getAssets().open("IT2_1F.txt");
+            InputStream inputStream = context.getAssets().open("KNU_library_1f.txt");
 
             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
             BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
