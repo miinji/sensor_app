@@ -68,7 +68,7 @@ public class SensorModule implements SensorEventListener{
         flag_is_sensor_running = true;
         sensor_measurement_start_time = start_time;
         file = file_in;
-
+        //registerListener ;; 원하는 센서의 데이터 수집, SensorEventListener;센서에 새로운 값 측정되면 처리
         sm.registerListener((SensorEventListener) this, s1, SensorManager.SENSOR_DELAY_NORMAL);
         //SamplingPeriodUs 자리에 10000 혹은 SensorManager.SENSOR_DELAY_FASTEST, SENSOR_DELAY_NORMAL 를 사용한다.
         sm.registerListener((SensorEventListener) this, s2, SensorManager.SENSOR_DELAY_NORMAL);
@@ -141,9 +141,9 @@ public class SensorModule implements SensorEventListener{
                     elapsed_time_s, elapsed_fw_time_s, light));
         } else if (sensorEvent.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR){
             System.arraycopy(sensorEvent.values, 0, quat, 0, 4);
-            SensorManager.getRotationMatrixFromVector(rot_mat, quat);
-            SensorManager.getOrientation(rot_mat, orientation_angle);
-            Matrix.transposeM(rot_mat_opengl, 0, rot_mat, 0);
+            SensorManager.getRotationMatrixFromVector(rot_mat, quat); //quaternion값을 이용해 회전변환획득
+            SensorManager.getOrientation(rot_mat, orientation_angle); //회전 변환으로부터 단말의 euler angles획득
+            Matrix.transposeM(rot_mat_opengl, 0, rot_mat, 0); //가속도값 획득
             Matrix.multiplyMV(accW, 0, rot_mat_opengl, 0, accL, 0);
             file.save_str_to_file(String.format("ROT_VEC, %f, %f, %f, %f, %f\n",
                     elapsed_time_s, elapsed_fw_time_s, quat[0], quat[1], quat[2], quat[3]));

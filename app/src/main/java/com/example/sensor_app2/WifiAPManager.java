@@ -11,10 +11,9 @@ import java.util.ArrayList;
 
 public class WifiAPManager {
     // 현재 층에 설치된 AP의 정보를 관리
-
     private ArrayList<APInfo> apInfoList = new ArrayList<>();
 
-    public WifiAPManager(Context context){
+    WifiAPManager(Context context){
         String line;
 
         try {
@@ -34,27 +33,31 @@ public class WifiAPManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         Log.d("WifiAPManager", String.format("Loaded %d AP(s)", apInfoList.size()));
     }
 
+
     class APInfo{
-        public String mac_addr;
-        public float x, y;
-        public int freq;
+        public String name, mac_addr1, mac_addr2;
+        public float ref_x, ref_y, x, y;
+        public float scale;
 
         public APInfo(String line){
-            String[] items = line.split(" ");
-            mac_addr =items[0];
-            x = Float.parseFloat(items[1]);
-            y = Float.parseFloat(items[2]);
-            freq = Integer.parseInt(items[3]);
+            String[] items = line.split(",");
+            name =items[0];
+            ref_x = Float.parseFloat(items[1]);
+            ref_y = Float.parseFloat(items[2]);
+            x = Float.parseFloat(items[3]);
+            y = Float.parseFloat(items[4]);
+            mac_addr1 = items[5];
+            mac_addr2 = items[6];
+            scale = Float.parseFloat(items[7]);
 
             validate();
         }
 
         private void validate(){
-            Log.d("APInfo", String.format("mac:%s, x:%lf, y:%lf, freq:%d", mac_addr, x, y, freq));
+            Log.d("APInfo", String.format("name: %s, mac:%s %s, x:%f, y:%f",name, mac_addr1, mac_addr2,x, y));
         }
     }
 }

@@ -46,7 +46,7 @@ public class FileModule {
             folder.mkdir();
 
         file = new File(folder, filename);
-
+        //파일 있는지 없는지 검증
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(file, true);
@@ -65,11 +65,11 @@ public class FileModule {
 
         is_file_created = true;
 
-        // put header(���� ��������, ��ġ, �ܸ����� ��)
+        // put header
         String date = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
         String header = "";
-        header += "## Date: " + date + "\n"; // ���߿� ���Ͽ��� "##" �� ���� ������ ��������̹Ƿ� �ڼ��ϰ� �� �ʿ� ����
-        header += "## File creation time since boot (ms): " + elapsedRealtime() + "\n";
+        header += "## Date: " + date + "\n";//데이터는 있는데 읽고 싶지 않다.
+        header += "## File creation time since boot (ms): " + elapsedRealtime() + "\n"; //elapsedRealTime():재부팅이후 경과시간을 ms단위변환
         header += "## Model: " + Build.MODEL + "\n";
         header += "## SDK version: " + Build.VERSION.SDK_INT + "\n";
         save_str_to_file(header);
@@ -77,10 +77,10 @@ public class FileModule {
     }
 
 
-    public void save_str_to_file(String data){
+    public void save_str_to_file(String data){ //생성된 파일에 문자열쓰기
         // save a single line to file
         if (!is_file_created)
-            return; // ������ �������� �ʾ��� �� ����ǵ��� ������ġ.
+            return;
         FileOutputStream fos = null;
 
         try {

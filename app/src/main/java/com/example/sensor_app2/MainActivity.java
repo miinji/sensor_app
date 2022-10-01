@@ -55,6 +55,8 @@ public class MainActivity extends AppCompatActivity {
     ImageModule imageModule;
     SensorModule sensorModule;
     WifiModule wifiModule;
+    WifiAPManager wifiAPManager;
+
 
 
     // permission-related
@@ -79,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
         imageModule = new ImageModule(this);
         sensorModule = new SensorModule(this); //인스턴스 생성
         wifiModule = new WifiModule(getApplicationContext());
+        wifiAPManager = new WifiAPManager(getApplicationContext());
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -175,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
         fab.setImageTintList(ColorStateList.valueOf(Color.rgb(57, 155, 226)));
     }
 
-
+//사용자의 위치등 동의여부 구할때 사용할 코드
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResult){
         for (int i=0; i<grantResult.length; i++)
             if (grantResult[i] != PERMISSION_GRANTED) {// PERMISSION_GRANTED 대신에 0으로 해도 됨!

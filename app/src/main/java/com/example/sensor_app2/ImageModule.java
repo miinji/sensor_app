@@ -62,7 +62,7 @@ public class ImageModule implements View.OnTouchListener{
         }
         Rect rect = new Rect(0, 0, img_h, img_w); // 이 사각형 안에 있는 이미지를 읽어올것이다.
         options.inJustDecodeBounds = false; // 이미지 전체를 읽을 것이다.
-        options.inSampleSize = 4; //이미지를 두 배로 압축해서 읽어오자
+        options.inSampleSize = 4; //이미지를 두 배로 압축해서 읽어오자, 크기를 줄여서 읽어오기
 
         bitmap = decoder.decodeRegion(rect, options); //원본
         bitmap_altered = Bitmap.createBitmap(bitmap.getHeight(), bitmap.getWidth(), bitmap.getConfig());
@@ -77,7 +77,7 @@ public class ImageModule implements View.OnTouchListener{
         // 화살표 그림을 가져옴
         arrow = BitmapFactory.decodeResource(activity.getResources(), R.raw.arrow);
 
-        plot_arrow(100, 100, 30);
+        plot_arrow(1000, 100, 60);
 
     }
 
