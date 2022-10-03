@@ -169,10 +169,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
         begin_time = elapsedRealtime();
-        fileModule = new FileModule(this, "test", true, true, ".txt");
 
-        sensorModule.start(begin_time, fileModule);
-        wifiModule.start();
+        FileModule file1 = new FileModule(this, "test", true, true, ".txt");
+        sensorModule.start(begin_time, file1);
+
+        FileModule file2 = new FileModule(this, "WIFI_sensor.txt");
+        wifiModule.start(file2);
 
         flag_running = true;
         fab.setImageTintList(ColorStateList.valueOf(Color.rgb(57, 155, 226)));

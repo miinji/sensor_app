@@ -14,7 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class FileModule {
-    //class ���� ����
+    //class fileModule
     private File file;
     private Activity mActivity;
     private boolean is_file_created = false;
@@ -76,6 +76,13 @@ public class FileModule {
 
     }
 
+    public void remove_file(){
+        try {
+            new FileOutputStream(file.getPath()).close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public void save_str_to_file(String data){ //생성된 파일에 문자열쓰기
         // save a single line to file
