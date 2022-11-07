@@ -15,6 +15,7 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Process;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -139,6 +140,28 @@ public class WifiModule {
 
                 file.save_str_to_file("\nscan_final\n" + scan_final);
                 positioning.start(scan_final);
+                current_state = "Scan counter: " + scan_counter + ", # APs: " + scanResults.size();
+                // 나중에 구현
+            }
+            else{
+                //신호 세기 상위 5개의 정보 출력
+                int [] signal_index2 = selectAPs(scanResults);
+                str += "상위 5개의 wifi 신호 정보\n";
+                for (int k = 0; k<5; k ++){
+                    str += scanResults.get(signal_index2[k]).SSID + ", "; // service set id
+                    str += scanResults.get(signal_index2[k]).BSSID + ", "; //wifi ap의 주소
+                    str += scanResults.get(signal_index2[k]).frequency + "MHz , ";
+                    str += scanResults.get(signal_index2[k]).level + "dBm";
+
+                    float curr_p = scanResults.get(signal_index2[k]).level;
+                    dist =(float)Math.pow(10, (P0 - curr_p) / 10 * eta);
+                    str += String.format(", distance: %.2fm\n", dist);
+                    scan_final += scanResults.get(signal_index2[k]).BSSID+"," + String.format("%.2f\n", dist);
+                }
+                file.save_str_to_file(str);
+                Log.d(TAG, "[UPDATE]WIFI_sensor_txt");
+                file.save_str_to_file("\nscan_final\n" + scan_final);
+                Toast.makeText(MyApplication.ApplicationContext(), "[ERROR]Move into the KNU_library!", Toast.LENGTH_SHORT).show();
                 current_state = "Scan counter: " + scan_counter + ", # APs: " + scanResults.size();
                 // 나중에 구현
             }
