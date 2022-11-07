@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 public class WifiAPManager {
     // 현재 층에 설치된 AP의 정보를 관리
-    private ArrayList<APInfo> apInfoList = new ArrayList<>();
+    public ArrayList<APInfo> apInfoList = new ArrayList<>();
 
     WifiAPManager(Context context){
         String line;
