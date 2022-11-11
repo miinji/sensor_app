@@ -131,7 +131,7 @@ public class WifiModule {
                     str += final_results.get(k).frequency + "MHz , ";
                     str += final_results.get(k).level + "dBm";
                     float curr_p = final_results.get(k).level;
-                    dist =(float)Math.pow(10, (P0 - curr_p) / 10 * eta);
+                    dist =(float)Math.pow(10, (P0 - curr_p) / eta);
                     str += String.format(", distance: %.2fm\n", dist);
                     scan_final += final_results.get(k).BSSID+"," + String.format("%.2f\n", dist);
                 }
@@ -154,7 +154,7 @@ public class WifiModule {
                     str += scanResults.get(signal_index2[k]).level + "dBm";
 
                     float curr_p = scanResults.get(signal_index2[k]).level;
-                    dist =(float)Math.pow(10, (P0 - curr_p) / 10 * eta);
+                    dist =(float)Math.pow(10, (P0 - curr_p) / eta);
                     str += String.format(", distance: %.2fm\n", dist);
                     scan_final += scanResults.get(signal_index2[k]).BSSID+"," + String.format("%.2f\n", dist);
                 }
