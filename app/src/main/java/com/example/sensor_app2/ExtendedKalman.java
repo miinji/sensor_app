@@ -9,13 +9,19 @@ import java.util.List;
 public class ExtendedKalman {
     // 위치 추정 기법 중에 칼만 필터를 이용하여 x-y좌표를 찾는 것을 구현
     // 강의 7 참고
-    // 경로손실모델로 얻은 길이는 wifimodule에서 받아오기
+    // 경로손실모델로 얻은 길이는 wifimodule에서 받아오기 -> -------------- 와이파이 신호를 받아와야함
     private WifiModule wifimodule;
     private Positioning positioning;
-    private WifiAPManager wifiAPManager;
+
+    private String[] data = new String[5];
+    WifiAPManager wifiAPManager = new WifiAPManager(MyApplication.ApplicationContext());
 
     List<Double> curr_pos = new ArrayList<>();
 
+    public Positioning getPositioning() {
+        return positioning;
+    }
+    
     double tmp_x = 0;
     double tmp_y = 0;
 
@@ -30,15 +36,19 @@ public class ExtendedKalman {
     Matrix sigma_tr_Matrix = new Matrix(vals_tr);
 
     //Wk의 diag행렬 - wk의 공분산 행렬
-    double sn_k=1.5;
+    double sn_k = 1.5; //1 ~ 2의 값으로 진행
     double [][] vals_diag ={{sn_k,0,0,0,0},{0,sn_k,0,0,0},{0,0,sn_k,0,0},{0,0,0,sn_k,0},{0,0,0,0,sn_k}};
-    Matrix Wk_cov_matrix = new Matrix(vals_diag);
+
+    //identity matrix
+    double [][] vals_iden = {{1,0},{0,1}};
+    Matrix identity_matrix = new Matrix(vals_iden);
 
     double [] Refx = new double[5]; //positioning 에서 받아오기 ***********************************************
     double [] Refy = new double[5];
-    double [] past_x = new double[5]; //이전 값 저장
-    double [] past_y = new double[5];
     double [] dist = new double[5]; // 경로손실모델로 얻은 dist
+    double past_x; //이전 값 저장
+    double past_y;
+
     Matrix H_k;
     Matrix Kalman_gain;
 
@@ -70,28 +80,25 @@ public class ExtendedKalman {
 
 
    }//--------------------------예측 start------------------------------//
-   private double [] cost_func(double past_x, double past_y, double [] Refx, double [] Refy, double [] dist ){ // 상태 추정을 위한 비용함수
-        //편미분된 비용함수
-       double [] partial_diff = new double[2];
+   private Matrix cost_func(double past_x, double past_y, double [] Refx, double [] Refy, double [] dist){ // 상태 추정을 위한 비용함수
+       double [][] partial_diff = new double[2][1];
        double sum_x = 0;
        double sum_y = 0;
        for(int i = 0; i < 5; i++){
            double tmp = Math.pow(past_x-Refx[i],2) + Math.pow(past_y-Refy[i],2);
-           double partial_x = 2 * (past_x - Refx[i]) - (2 * dist[i] * (past_x - Refx[i]) / Math.pow(tmp,1/2));
-           double partial_y = 2 * (past_y - Refy[i]) - (2 * dist[i] * (past_y - Refy[i]) / Math.pow(tmp,1/2));
-
-
+           //편미분된 비용함수
+           double partial_x = 2 * (past_x - Refx[i]) - (2 * dist[i] * (past_x - Refx[i]) / Math.pow(tmp,0.5));
+           double partial_y = 2 * (past_y - Refy[i]) - (2 * dist[i] * (past_y - Refy[i]) / Math.pow(tmp,0.5));
+            sum_x += partial_x;
+            sum_y += partial_y;
        }
-
-       //partial_diff[0] = partial_x;
-
-     //  partial_diff[1] = partial_y;
-
-       return partial_diff; // 현재 추정된 단말의 위치 -> z^(k|k-1)
+       Matrix partial_matrix = new Matrix(partial_diff);
+       return partial_matrix; // 현재 추정된 단말의 위치 -> z^(k|k-1)
 
 
    }
-   private Matrix COV_matrix(double [] Refx, double [] Refy){
+   //2x2 공분산 행렬 만드는 함수
+   public Matrix COV_matrix(double [] Refx, double [] Refy){
         double tmp_x = 0;
         double tmp_y = 0;
        for(int i = 0; i < 5 ; i++){ // 이전의 x,y값 평균내기
@@ -114,24 +121,29 @@ public class ExtendedKalman {
    }
 
 //------------------------------상태업데이트-----------------------------------//
-
+/*
     //h를 야코비안 행렬로 만들어서 H 만들기
-    public double [] pre_h(double [] Refx, double [] Refy, double [] dist){
-        //거리추정오차, ||z-zn|| 생성 -> ||z-zn||을 거리로 생각 - Matrix norm
-        double [] error_dist = new double[5];
-        double [] h_z = new double[5];
-        double x=0; // 일단 0으로,,,
-        double y=0; //추정해야할 단말의 x,y
+        public double [] Make_Func_h(double [] Refx, double [] Refy, double [] dist){
+            //거리추정오차, ||z-zn|| 생성 -> ||z-zn||을 거리로 생각 - Matrix norm
+            double [] error_dist = new double[5];
+            double [] func_h = new double[5];
+            double x=0; // 일단 0으로,,,
+            double y=0; //추정해야할 단말의 x,y
 
-        for(int i = 0;i < 5;i++){
-            error_dist[i] = Math.pow(Math.pow(x - Refx[i],2) + Math.pow(y - Refy[i],2),1/2) - dist[i];
-            h_z[i] = Math.pow(Math.pow(x - Refx[i],2) + Math.pow(y - Refy[i],2),1/2) - error_dist[i];
+            for(int i = 0;i < 5;i++){
+                error_dist[i] = Math.pow(Math.pow(x - Refx[i],2) + Math.pow(y - Refy[i],2),1/2) - dist[i];
+                func_h[i] = Math.pow(Math.pow(x - Refx[i],2) + Math.pow(y - Refy[i],2),1/2) - error_dist[i];
+            }
+
+            return func_h;
         }
 
-        return h_z;
-    }
+        private double [] Innovation(double [] dist){
+            func_h = Make_Func_h(Refx, Refy, )
+        }
+*/
     //상위 신호 5개 받아오기, 거리추정오차 받아오기
-    //어차피 야코비안 때리면 wk는 상수로 사라지지 않을까?
+    //어차피 야코비안 때리면 wk는 상수로 사라지지 않을까? -------------------------------------- 야코비안 다시 만들기
     public Matrix Jacobian(double [] Refx, double [] Refy) {
         //거리추정오차, ||z-zn|| 생성 -> ||z-zn||을 거리로 생각 - Matrix norm
         double x=0;
@@ -146,17 +158,8 @@ public class ExtendedKalman {
         return jacobian_Matrix;
         }
 
-    //거리 추정 오차가 zero일때의 e(k)
-    private double [] innovation(double [] dis){
-        double [] e_k = new double[5];
-        double [] h_z = pre_h(Refx, Refy, dist); //return h_z
-        for(int i = 0;i<5;i++){
-            e_k[i] = dis[i] - h_z[i];
-        }
-       return e_k;
 
-    }
-
+/*
     //e(k)의 공분산 행렬, 5x5 행렬
     private Matrix inno_cov_matrix(){
         H_k = Jacobian(Refx, Refy);
@@ -196,4 +199,74 @@ public class ExtendedKalman {
     private void update_cov_matrix(){
 
     }
+*/
+    private void update_state(double [] Refx, double [] Refy, double [] dist){
+        double [] error_dist = new double[5];
+        double [] func_z = new double[5];
+        double [] func_h = new double[5];
+        double [][] func_e = new double[5][1];
+
+        double x=0; // 일단 0으로,,,
+        double y=0; //추정해야할 단말의 x,y
+
+        for(int i = 0;i < 5;i++){
+            error_dist[i] = Math.pow(Math.pow(x - Refx[i],2) + Math.pow(y - Refy[i],2),0.5) - dist[i];
+            func_z[i] = Math.pow(Math.pow(x - Refx[i],2) + Math.pow(y - Refy[i],2),0.5); // Matrix norm 만 따로 구현
+            func_h[i] = func_z[i] + error_dist[i];
+        }
+
+        //innovation
+        for(int i = 0;i<5;i++){
+            //func_e[i] = dist[i] - func_h[i]; // w(k)=0 이니까,,,
+            func_e[i][0] = dist[i] - func_z[i];
+        }
+        //Jacobain 적용
+        Matrix func_H = Jacobian(func_h, func_h);
+        Matrix func_P = COV_matrix(Refx,Refy);
+        Matrix W_k = new Matrix(vals_diag);
+
+        //func_e의 공분산 행렬
+        double [][] S_k = new double[5][5];
+        Matrix func_S = new Matrix(S_k);
+        func_S = func_H.arrayTimes(func_P);
+        func_S = func_S.arrayTimesEquals(func_H.transpose());
+        func_S = func_S.plus(W_k);
+
+        //kalman gain
+        double [][] gain = new double[2][5];
+        Matrix kalman_gain = new Matrix(gain);
+        kalman_gain = func_P.arrayTimes(func_H.transpose());
+        kalman_gain = kalman_gain.arrayTimesEquals(func_S.inverse());
+
+
+        //update된 상태
+        double [][] update = new double[2][1];
+        Matrix tmp_matrix = cost_func(past_x, past_y, Refx, Refy, dist);
+        Matrix update_z = new Matrix(update);
+        Matrix func_e_matrix = new Matrix(func_e);
+        update_z = kalman_gain.arrayTimes(func_e_matrix);
+        update_z = update_z.plus(tmp_matrix);
+
+        //update 된 공분산 행렬
+        double [][] update_cov = new double[2][2];
+        Matrix update_cov_matrix = new Matrix(update_cov);
+        Matrix tmp_update_cov = kalman_gain.arrayTimes(func_H);
+        tmp_update_cov = identity_matrix.minus(tmp_update_cov);
+        update_cov_matrix = tmp_update_cov.arrayTimes(func_P);
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
 }
