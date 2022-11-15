@@ -9,9 +9,11 @@ import java.util.List;
 // Refx, Refy data String으로 해서 받아오기
 
 public class ExtendedKalman {
+    public Positioning positioning;
     // 위치 추정 기법 중에 칼만 필터를 이용하여 x-y좌표를 찾는 것을 구현
     // 강의 7 참고
     // 경로손실모델로 얻은 길이는 wifimodule에서 받아오기 -> -------------- 와이파이 신호를 받아와야함
+
 
     //초기 공분산 행렬
     double sigma = 1;
@@ -37,7 +39,8 @@ public class ExtendedKalman {
     double past_x; //이전 값 저장
     double past_y;
 
-   //공분산 행렬
+
+    //공분산 행렬
    public Matrix Make_cov_Matrix(double [] x_val, double [] y_val){
        double tmp_x = 0;
        double tmp_y = 0;
@@ -75,7 +78,7 @@ public class ExtendedKalman {
 
     //z는 이전 상태와 같다고 가정, P는 시그마tr을 더하는 걸로
     //이전의 x,y값, 상위 AP신호의 x,y값, 경로손실모델로 얻은 거리,
-    private void update_state(double [] Refx, double [] Refy, double [] dist, double x, double y, Matrix P){
+    public void update_state(double [] Refx, double [] Refy, double [] dist, double x, double y, Matrix P){
         //double [] error_dist = new double[5];
        // double [] func_z = new double[5];
         double [] func_h = new double[5];
