@@ -55,7 +55,6 @@ public class WifiAPManager {
 
             validate();
         }
-
         private void validate(){
             Log.d("APInfo", String.format("name: %s, mac:%s %s, x:%f, y:%f",name, mac_addr1, mac_addr2,x, y));
         }

@@ -26,10 +26,7 @@ import java.util.Map;
 
 public class WifiModule {
     private FileModule file;
-    private WifiAPManager wifiAPManager;
-    public Positioning positioning;
     public String scan_final;
-    private Activity mActivity;
 
     WifiManager wifiManager;
     WifiReceiver wifiReceiver;
@@ -37,6 +34,7 @@ public class WifiModule {
     //wifi 스캔 관련 변수들
     boolean flag_running = false;
     int scan_counter = 0; //몇번째 스캔을 진행하였는지
+    int correct_scan_counter = 0;
     long last_scan_time_ms = elapsedRealtime();
     final int scan_interval_ms = 5000; //5초 마다 스캔
 
@@ -98,9 +96,10 @@ public class WifiModule {
         flag_running = false;
     }
 
+
     class WifiReceiver extends BroadcastReceiver {
         WifiAPManager wifiAPManager = new WifiAPManager(MyApplication.ApplicationContext());
-        Positioning positioning = new Positioning(mActivity);
+        Positioning positioning = new Positioning(MyApplication.ApplicationContext());
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "Scan results received");
@@ -110,7 +109,6 @@ public class WifiModule {
             float P0 = -30;
             float eta = 2;
             float dist;
-            scan_final =""; //초기화
 
             String str = "";
             str += "Found " + scanResults.size() + " APs\n";
@@ -120,18 +118,20 @@ public class WifiModule {
             for(int k=0; k<signal_index.length; k++){
                 buffer.add(scanResults2.get(signal_index[k]));
             }
+            List<ScanResult> final_results = filterResult(buffer);
             // 신호의 세기 순서대로 나열된 인덱스 저장
-            if (buffer.size() >= 5){
-                List<ScanResult> final_results = filterResult(buffer);
+            if (final_results.size() >= 5){
                 //신호 세기 상위 5개의 정보 출력
+                correct_scan_counter += 1;
                 str += "APinfo.txt 안에 상위 5개의 wifi 신호 정보\n";
+                scan_final =""; //초기화
                 for (int k = 0; k<5; k ++){
                     str += final_results.get(k).SSID + ", "; // service set id
                     str += final_results.get(k).BSSID + ", "; //wifi ap의 주소
                     str += final_results.get(k).frequency + "MHz , ";
                     str += final_results.get(k).level + "dBm";
                     float curr_p = final_results.get(k).level;
-                    dist =(float)Math.pow(10, (P0 - curr_p) / eta);
+                    dist =(float)Math.pow(10, ((P0 - curr_p) / (10 * eta)));
                     str += String.format(", distance: %.2fm\n", dist);
                     scan_final += final_results.get(k).BSSID+"," + String.format("%.2f\n", dist);
                 }
@@ -139,7 +139,10 @@ public class WifiModule {
                 Log.d(TAG, "[UPDATE]WIFI_sensor_txt");
 
                 file.save_str_to_file("\nscan_final\n" + scan_final);
-                positioning.start(scan_final);
+                positioning.getScan_final(scan_final);
+                if(correct_scan_counter == 1){
+                    positioning.start(scan_final);
+                }
                 current_state = "Scan counter: " + scan_counter + ", # APs: " + scanResults.size();
                 // 나중에 구현
             }
@@ -148,13 +151,14 @@ public class WifiModule {
                 int [] signal_index2 = selectAPs(scanResults);
                 str += "상위 5개의 wifi 신호 정보\n";
                 for (int k = 0; k<5; k ++){
+                    scan_final =""; //초기화
                     str += scanResults.get(signal_index2[k]).SSID + ", "; // service set id
                     str += scanResults.get(signal_index2[k]).BSSID + ", "; //wifi ap의 주소
                     str += scanResults.get(signal_index2[k]).frequency + "MHz , ";
                     str += scanResults.get(signal_index2[k]).level + "dBm";
 
                     float curr_p = scanResults.get(signal_index2[k]).level;
-                    dist =(float)Math.pow(10, (P0 - curr_p) / eta);
+                    dist =(float)Math.pow(10, ((P0 - curr_p) / (10 * eta)));
                     str += String.format(", distance: %.2fm\n", dist);
                     scan_final += scanResults.get(signal_index2[k]).BSSID+"," + String.format("%.2f\n", dist);
                 }
@@ -186,7 +190,7 @@ public class WifiModule {
 
             int n = 0;
             for(Map.Entry<Integer, Integer> entry : entryList){
-                signal_indexs[n] = entry.getKey().intValue();
+                signal_indexs[n] = entry.getKey();
                 n++;
             }
 
