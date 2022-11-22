@@ -1,6 +1,8 @@
 package com.example.sensor_app2;
 
+import android.app.Activity;
 import android.content.Context;
+import android.provider.ContactsContract;
 import android.util.Log;
 import java.util.Arrays;
 import java.util.Timer;
@@ -9,6 +11,9 @@ import Jama.Matrix;
 
 
 public class Positioning {
+    public double past_x;
+    public double past_y;
+    private Activity mActivity;
     boolean flag_running = false;
     // 마지막 실행
     String current_state = "";
@@ -16,10 +21,10 @@ public class Positioning {
     String TAG = "Positioning";
     String scanData; //wifiModule 에서 받아온 scan data 저장
     String preData;
-
     private String[] data = new String[5];
     WifiAPManager wifiAPManager = new WifiAPManager(MyApplication.ApplicationContext());
-    Positioning(Context context) { }
+    Positioning(Context context) {
+    }
 
     public String get_latest_state() {
         return current_state;
@@ -34,6 +39,8 @@ public class Positioning {
         double [] firstvalue = firstValue(data); // [x, y]로 초기화
         Log.d(TAG, Arrays.toString(firstvalue));
         ExtendedKalman extendedKalman = new ExtendedKalman(firstvalue);
+//        imageModule.getKalmanX(firstvalue[0]);
+//        imageModule.getKalmanX(firstvalue[1]);
         Log.d(TAG, "initialize extendedKalman");
         run(extendedKalman);
     }
@@ -63,12 +70,12 @@ public class Positioning {
             String addr = lines[i].split(",")[0];
             for (int j = 0; j < wifiAPManager.apInfoList.size(); j++) {
                 if (addr.equals(wifiAPManager.apInfoList.get(j).mac_addr1)) {
-                    double X = wifiAPManager.apInfoList.get(j).ref_x + wifiAPManager.apInfoList.get(j).x;
-                    double Y = wifiAPManager.apInfoList.get(j).ref_y + wifiAPManager.apInfoList.get(j).y;
+                    double X = wifiAPManager.apInfoList.get(j).x;
+                    double Y = wifiAPManager.apInfoList.get(j).y;
                     data[i] = lines[i] + "," + X +"," + Y;
                 } else if (addr.equals(wifiAPManager.apInfoList.get(j).mac_addr2)) {
-                    double X = wifiAPManager.apInfoList.get(j).ref_x + wifiAPManager.apInfoList.get(j).x;
-                    double Y = wifiAPManager.apInfoList.get(j).ref_y + wifiAPManager.apInfoList.get(j).y;
+                    double X = wifiAPManager.apInfoList.get(j).x;
+                    double Y = wifiAPManager.apInfoList.get(j).y;
                     data[i] = lines[i] + "," + X +"," + Y;
                 }
             }
@@ -104,8 +111,6 @@ public class Positioning {
         return firstValue;
     }
     public class ExtendedKalman {
-        public double past_x;
-        public double past_y;
         public Matrix past_P;
         // 위치 추정 기법 중에 칼만 필터를 이용하여 x-y좌표를 찾는 것을 구현
         // 강의 7 참고
@@ -249,8 +254,16 @@ public class Positioning {
             past_P = update_cov_matrix;
             past_x = update_z.get(0, 0);
             past_y = update_z.get(1, 0);
+//            imageModule.getKalmanX(past_x);
+//            imageModule.getKalmanX(past_y);
             Log.d(TAG, String.valueOf(past_x) + ", " + String.valueOf(past_y));
 //update된 z와 P를 다시 신호 받아올 때까지 저장해두고, 이전 값으로 사용
         }
+    }
+    public float getX(){
+        return (float)past_x;
+    }
+    public float getY(){
+        return (float)past_y;
     }
 }

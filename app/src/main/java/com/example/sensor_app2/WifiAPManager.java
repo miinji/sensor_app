@@ -39,19 +39,16 @@ public class WifiAPManager {
 
     class APInfo{
         public String name, mac_addr1, mac_addr2;
-        public float ref_x, ref_y, x, y;
+        public float x, y;
         public float scale;
 
         public APInfo(String line){
             String[] items = line.split(",");
             name =items[0];
-            ref_x = Float.parseFloat(items[1]);
-            ref_y = Float.parseFloat(items[2]);
             x = Float.parseFloat(items[3]);
             y = Float.parseFloat(items[4]);
-            mac_addr1 = items[5];
-            mac_addr2 = items[6];
-            scale = Float.parseFloat(items[7]);
+            mac_addr1 = items[1];
+            mac_addr2 = items[2];
 
             validate();
         }

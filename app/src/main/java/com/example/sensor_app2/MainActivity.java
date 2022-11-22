@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
     TextView tv;
     FloatingActionButton fab, fab2;
     boolean flag_running = false;
+    public static Context mContext;
 
 
     // File 쓸 수 있도록 fileModule 생성
@@ -56,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
     SensorModule sensorModule;
     WifiModule wifiModule;
     WifiAPManager wifiAPManager;
-
+    Positioning positioning;
 
 
     // permission-related
@@ -66,10 +67,14 @@ public class MainActivity extends AppCompatActivity {
     Looper display_update_looper;
     int count = 0;
 
+    public float X;
+    public float Y;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mContext = this;
 
         // permission-request
         ActivityCompat.requestPermissions(this, new String[]{WRITE_EXTERNAL_STORAGE, CHANGE_WIFI_STATE, ACCESS_WIFI_STATE, ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION}, 1);
@@ -82,6 +87,8 @@ public class MainActivity extends AppCompatActivity {
         sensorModule = new SensorModule(this); //인스턴스 생성
         wifiModule = new WifiModule(getApplicationContext());
         wifiAPManager = new WifiAPManager(getApplicationContext());
+        positioning = new Positioning(MyApplication.ApplicationContext());
+
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -122,7 +129,9 @@ public class MainActivity extends AppCompatActivity {
 
         if(flag_running){
             float deg = sensorModule.get_heading();
-            imageModule.plot_arrow(0,0, deg);
+            imageModule.plot_arrow(X,Y, deg);
+            Log.d("image", Float.toString(X);
+            Log.d("image", Float.toString(Y);
 
             String str = "";
             str += "[WIFI]\n" + wifiModule.get_latest_state() + "\n";
@@ -188,6 +197,12 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
         is_permission_granted = true;
+    }
+    public float getX(double num){
+        return (float)num * 1000;
+    }
+    public float getY(double num){
+        return (float)num * 1000;
     }
 
 
