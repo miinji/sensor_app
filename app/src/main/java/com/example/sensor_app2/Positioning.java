@@ -39,18 +39,19 @@ public class Positioning {
         double [] firstvalue = firstValue(data); // [x, y]로 초기화
         Log.d(TAG, Arrays.toString(firstvalue));
         ExtendedKalman extendedKalman = new ExtendedKalman(firstvalue);
-//        imageModule.getKalmanX(firstvalue[0]);
-//        imageModule.getKalmanX(firstvalue[1]);
+        //메인 엑티비티로 초깃값 전달
+        ((MainActivity)MainActivity.mContext).getX(firstvalue[0]);
+        ((MainActivity)MainActivity.mContext).getY(firstvalue[1]);
         Log.d(TAG, "initialize extendedKalman");
-        run(extendedKalman);
+        start(extendedKalman);
     }
-    public void run(ExtendedKalman extendedKalman){
+    public void start(ExtendedKalman extendedKalman){
         Timer timer = new Timer();
         TimerTask task = new TimerTask() {
             @Override
             public void run() {
                 if(flag_running){
-                    extendedKalman.start();
+                    extendedKalman.run();
                 }
             }
         };
@@ -117,14 +118,14 @@ public class Positioning {
         // 경로손실모델로 얻은 길이는 wifimodule에서 받아오기 -> -------------- 와이파이 신호를 받아와야함
         //초기 공분산 행렬
         ExtendedKalman(double [] initValue){
-            past_x = initValue[0]; //이전 값 저장
+            past_x = initValue[0]; //초깃값 설정 X, Y 좌표
             past_y = initValue[1];
             double sigma = 1;
             double [][] vals = {{sigma, 0},{0, sigma}}; // 초기 공분산 행렬
             past_P = new Matrix(vals);
         }
-        public void start(){
-            if(scanData != preData){
+        public void run(){
+            if(scanData != preData){ //scanData가 변하면 칼만필터 실행함 update
                 update_state(past_x, past_y, past_P, scanData);
                 Log.d(TAG, "[update] Kalman");
                 preData = scanData;
@@ -254,16 +255,11 @@ public class Positioning {
             past_P = update_cov_matrix;
             past_x = update_z.get(0, 0);
             past_y = update_z.get(1, 0);
-//            imageModule.getKalmanX(past_x);
-//            imageModule.getKalmanX(past_y);
+            //메인 엑티비티로 칼만 필터로 구한 좌표값 전달
+            ((MainActivity)MainActivity.mContext).getX(past_x);
+            ((MainActivity)MainActivity.mContext).getY(past_y);
             Log.d(TAG, String.valueOf(past_x) + ", " + String.valueOf(past_y));
 //update된 z와 P를 다시 신호 받아올 때까지 저장해두고, 이전 값으로 사용
         }
-    }
-    public float getX(){
-        return (float)past_x;
-    }
-    public float getY(){
-        return (float)past_y;
     }
 }

@@ -70,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
     public float X;
     public float Y;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -87,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
         sensorModule = new SensorModule(this); //인스턴스 생성
         wifiModule = new WifiModule(getApplicationContext());
         wifiAPManager = new WifiAPManager(getApplicationContext());
-        positioning = new Positioning(MyApplication.ApplicationContext());
+        positioning = new Positioning(getApplicationContext());
 
 
         fab.setOnClickListener(new View.OnClickListener() {
@@ -127,11 +128,11 @@ public class MainActivity extends AppCompatActivity {
         count += 1;
         tv.setText(count + "");
 
+
         if(flag_running){
             float deg = sensorModule.get_heading();
             imageModule.plot_arrow(X,Y, deg);
-            Log.d("image", Float.toString(X);
-            Log.d("image", Float.toString(Y);
+            Log.d("image", X + ", " + Y);
 
             String str = "";
             str += "[WIFI]\n" + wifiModule.get_latest_state() + "\n";
@@ -198,12 +199,8 @@ public class MainActivity extends AppCompatActivity {
             }
         is_permission_granted = true;
     }
-    public float getX(double num){
-        return (float)num * 1000;
+    public void getX(double num){ X = (float) ((float)num * 11); }
+    public void getY(double num){
+        Y = (float) ((float)num * 11);
     }
-    public float getY(double num){
-        return (float)num * 1000;
-    }
-
-
 }

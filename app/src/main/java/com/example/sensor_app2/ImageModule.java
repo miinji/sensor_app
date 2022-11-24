@@ -36,8 +36,6 @@ public class ImageModule implements View.OnTouchListener{
     private PointF mid = new PointF(); // 중간 지점 저장
     private float[] lastEvent = null; // 마지막에 어떤 이벤트가 발생했는가
     private float oldDist = 1f; // 그전의 distance 저장
-    private float kalmanX;
-    private float KalmanY;
 
     ImageModule(Activity activity){
         imageView = (ImageView) activity.findViewById(R.id.imageView);
@@ -64,7 +62,7 @@ public class ImageModule implements View.OnTouchListener{
         }
         Rect rect = new Rect(0, 0, img_h, img_w); // 이 사각형 안에 있는 이미지를 읽어올것이다.
         options.inJustDecodeBounds = false; // 이미지 전체를 읽을 것이다.
-        options.inSampleSize = 4; //이미지를 두 배로 압축해서 읽어오자, 크기를 줄여서 읽어오기
+        options.inSampleSize = 4; //이미지를 네 배로 압축해서 읽어오자, 크기를 줄여서 읽어오기
 
         bitmap = decoder.decodeRegion(rect, options); //원본
         bitmap_altered = Bitmap.createBitmap(bitmap.getHeight(), bitmap.getWidth(), bitmap.getConfig());
@@ -78,8 +76,6 @@ public class ImageModule implements View.OnTouchListener{
 
         // 화살표 그림을 가져옴
         arrow = BitmapFactory.decodeResource(activity.getResources(), R.raw.arrow);
-//        kalmanX = positioning.getX();
-//        kalmanY = positioning.getY();
         plot_arrow(1000, 500, 60);
     }
 
@@ -155,11 +151,5 @@ public class ImageModule implements View.OnTouchListener{
         float x = motionEvent.getX(0) + motionEvent.getX(1);
         float y = motionEvent.getY(0) + motionEvent.getY(1);
         point.set(x / 2, y / 2);
-    }
-    public void getKalmanX(double num){
-        kalmanX = (float) num;
-    }
-    public void getKalmanY(double num){
-        KalmanY = (float) num;
     }
 }
