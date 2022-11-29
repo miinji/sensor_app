@@ -11,9 +11,8 @@ import Jama.Matrix;
 
 
 public class Positioning {
-    public double past_x;
-    public double past_y;
-    private Activity mActivity;
+    public double past_x; //x-1 값 저장
+    public double past_y; //y-1 값 저장
     boolean flag_running = false;
     // 마지막 실행
     String current_state = "";
@@ -24,10 +23,6 @@ public class Positioning {
     private String[] data = new String[5];
     WifiAPManager wifiAPManager = new WifiAPManager(MyApplication.ApplicationContext());
     Positioning(Context context) {
-    }
-
-    public String get_latest_state() {
-        return current_state;
     }
 
     public void start(String measure) {
@@ -55,6 +50,7 @@ public class Positioning {
                 }
             }
         };
+        //칼만필터 초기화 후 6초 기다렸다가 5초마다 run실행
         timer.schedule(task, 6000, 5000);
     }
 
@@ -63,18 +59,14 @@ public class Positioning {
         scanData = measure;
         return scanData;
     }
-    //받아온 data중 APinfo에 저장된
-    //String [] 형태로 저장된 data의 addr와 APinfo.txt addr 비교 후 추출
+    //String [] 형태로 저장된 data의 addr와 KNU_library_1f와 addr 비교 후 좌표 포함하여 추출
+    //각 요소 = addr,dist,X,Y 형태로 저장
     public String[] selectAPs(String[] lines) {
         String[] data = new String[5];
         for (int i = 0; i < 5; i++) {
             String addr = lines[i].split(",")[0];
             for (int j = 0; j < wifiAPManager.apInfoList.size(); j++) {
-                if (addr.equals(wifiAPManager.apInfoList.get(j).mac_addr1)) {
-                    double X = wifiAPManager.apInfoList.get(j).x;
-                    double Y = wifiAPManager.apInfoList.get(j).y;
-                    data[i] = lines[i] + "," + X +"," + Y;
-                } else if (addr.equals(wifiAPManager.apInfoList.get(j).mac_addr2)) {
+                if (addr.equals(wifiAPManager.apInfoList.get(j).mac_addr2)) {
                     double X = wifiAPManager.apInfoList.get(j).x;
                     double Y = wifiAPManager.apInfoList.get(j).y;
                     data[i] = lines[i] + "," + X +"," + Y;
@@ -83,7 +75,8 @@ public class Positioning {
         }
         return data;
     }
-
+    //초깃값 구하는 함수
+    //받아온 AP 위치 값들의 평균 -> 초기 좌표 (X, Y) 반환
     private double [] firstValue(String[] data){
         double[] x = new double[5];
         double[] y = new double[5];
@@ -111,12 +104,12 @@ public class Positioning {
         firstValue[1] = n2 / 5;
         return firstValue;
     }
+    // 위치 추정 기법 중에 칼만 필터를 이용하여 x-y좌표를 찾는 것을 구현
+    // 강의 7 참고
+    // 경로손실모델로 얻은 길이는 wifimodule에서 받아오기 -> -------------- 와이파이 신호를 받아와야함
     public class ExtendedKalman {
-        public Matrix past_P;
-        // 위치 추정 기법 중에 칼만 필터를 이용하여 x-y좌표를 찾는 것을 구현
-        // 강의 7 참고
-        // 경로손실모델로 얻은 길이는 wifimodule에서 받아오기 -> -------------- 와이파이 신호를 받아와야함
         //초기 공분산 행렬
+        public Matrix past_P;
         ExtendedKalman(double [] initValue){
             past_x = initValue[0]; //초깃값 설정 X, Y 좌표
             past_y = initValue[1];
@@ -174,7 +167,7 @@ public class Positioning {
         public void update_state(double preX, double preY, Matrix preP, String measuredata){
             //double [] error_dist = new double[5];
             // double [] func_z = new double[5];
-            String[] lines = measuredata.split("\n");
+            String[] lines = measuredata.split("\n");//받아온 data를 String []로 변환
             data = selectAPs(lines);
 
             //sigma_tr 1 ~ 2 정도의 값
@@ -192,7 +185,7 @@ public class Positioning {
             //wifiModule에서 받아와야 할 정보***********************************************
             double [] X = new double[5];
             double [] Y = new double[5];
-            double [] dist = new double[5]; // 경로손실모델로 얻은 dist   -> wifimodule에 있음
+            double [] dist = new double[5]; // 경로손실모델로 얻은 dist
             String [] items = new String[4];
             // wifiModule 에서 받아온 신호들 각 double에 넣기
             for(int i =0 ; i < 5 ; i++){
@@ -252,14 +245,17 @@ public class Positioning {
             tmp_cov = identity_matrix.minus(tmp_cov);
             update_cov_matrix = tmp_cov.times(func_P);
 
+            //update된 z와 P를 다시 신호 받아올 때까지 저장해두고, 이전 값으로 사용
             past_P = update_cov_matrix;
             past_x = update_z.get(0, 0);
             past_y = update_z.get(1, 0);
+
             //메인 엑티비티로 칼만 필터로 구한 좌표값 전달
             ((MainActivity)MainActivity.mContext).getX(past_x);
             ((MainActivity)MainActivity.mContext).getY(past_y);
+
             Log.d(TAG, String.valueOf(past_x) + ", " + String.valueOf(past_y));
-//update된 z와 P를 다시 신호 받아올 때까지 저장해두고, 이전 값으로 사용
+
         }
     }
 }

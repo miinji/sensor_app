@@ -29,8 +29,10 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Process;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -188,6 +190,7 @@ public class MainActivity extends AppCompatActivity {
 
         flag_running = true;
         fab.setImageTintList(ColorStateList.valueOf(Color.rgb(57, 155, 226)));
+
     }
 
 //사용자의 위치등 동의여부 구할때 사용할 코드

@@ -9,8 +9,11 @@ import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ImageView;
 
 import java.io.IOException;
@@ -60,13 +63,12 @@ public class ImageModule implements View.OnTouchListener{
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Rect rect = new Rect(0, 0, img_h, img_w); // 이 사각형 안에 있는 이미지를 읽어올것이다.
+        Rect rect = new Rect(0, 0, img_w, img_h); // 이 사각형 안에 있는 이미지를 읽어올것이다.
         options.inJustDecodeBounds = false; // 이미지 전체를 읽을 것이다.
         options.inSampleSize = 4; //이미지를 네 배로 압축해서 읽어오자, 크기를 줄여서 읽어오기
 
         bitmap = decoder.decodeRegion(rect, options); //원본
-        bitmap_altered = Bitmap.createBitmap(bitmap.getHeight(), bitmap.getWidth(), bitmap.getConfig());
-
+        bitmap_altered = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), bitmap.getConfig());
         // 비트맵을 그림판에 출력
         canvas = new Canvas(bitmap_altered);
         canvas.drawBitmap(bitmap, 0,0, null);
@@ -77,6 +79,7 @@ public class ImageModule implements View.OnTouchListener{
         // 화살표 그림을 가져옴
         arrow = BitmapFactory.decodeResource(activity.getResources(), R.raw.arrow);
         plot_arrow(1000, 500, 60);
+        findDPI();
     }
 
     //화살표 그리는 method
@@ -151,5 +154,12 @@ public class ImageModule implements View.OnTouchListener{
         float x = motionEvent.getX(0) + motionEvent.getX(1);
         float y = motionEvent.getY(0) + motionEvent.getY(1);
         point.set(x / 2, y / 2);
+    }
+    private void findDPI(){
+        DisplayMetrics metrics = new DisplayMetrics();
+        WindowManager mgr = (WindowManager)MyApplication.ApplicationContext().getSystemService(MyApplication.WINDOW_SERVICE);
+        mgr.getDefaultDisplay().getMetrics(metrics);
+
+        Log.d("TAG", "densityDPI = " + metrics.densityDpi);
     }
 }

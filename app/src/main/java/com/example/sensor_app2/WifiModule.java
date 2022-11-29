@@ -26,7 +26,7 @@ import java.util.Map;
 
 public class WifiModule {
     private FileModule file;
-    public String scan_final;
+    public String scan_final; //positioning으로 넘겨줄 데이터
 
     WifiManager wifiManager;
     WifiReceiver wifiReceiver;
@@ -34,7 +34,7 @@ public class WifiModule {
     //wifi 스캔 관련 변수들
     boolean flag_running = false;
     int scan_counter = 0; //몇번째 스캔을 진행하였는지
-    int correct_scan_counter = 0;
+    int correct_scan_counter = 0; //제대로 신호가 들어왔을 때의 scan_counter
     long last_scan_time_ms = elapsedRealtime();
     final int scan_interval_ms = 5000; //5초 마다 스캔
 
@@ -113,33 +113,52 @@ public class WifiModule {
             String str = "";
             str += "Found " + scanResults.size() + " APs\n";
 
-            List<ScanResult> scanResults2 = checkAPs(wifiAPManager, scanResults); //scanResults중 APinfo에 저장된 값만 추출하여 배열
-            int [] signal_index = selectAPs(scanResults2);
-            for(int k=0; k<signal_index.length; k++){
-                buffer.add(scanResults2.get(signal_index[k]));
+            int [] signal_index2 = alignAPs(scanResults);
+            str += "상위 10개의 wifi 신호 정보\n";
+            scan_final =""; //초기화
+            for (int k = 0; k<10; k ++){
+                str += scanResults.get(signal_index2[k]).SSID + ", "; // service set id
+                str += scanResults.get(signal_index2[k]).BSSID + ", "; //wifi ap의 주소
+                str += scanResults.get(signal_index2[k]).frequency + "MHz , ";
+                str += scanResults.get(signal_index2[k]).level + "dBm";
+
+                float curr_p = scanResults.get(signal_index2[k]).level;
+                dist =(float)Math.pow(10, ((P0 - curr_p) / (10 * eta)));
+                str += String.format(", distance: %.2fm\n", dist);
+
             }
-            List<ScanResult> final_results = filterResult(buffer);
+
+
+            //scanResults중 APinfo에 저장된 값만 추출하여 배열
+            List<ScanResult> scanResults2 = checkAPs(wifiAPManager, scanResults);
             // 신호의 세기 순서대로 나열된 인덱스 저장
-            if (final_results.size() >= 5){
-                //신호 세기 상위 5개의 정보 출력
+            int [] signal_index = alignAPs(scanResults2);
+            //APinfo 안에 있는 신호가 5개 이상일 경우
+            //신호 세기 상위 5개의 정보 출력
+            if (signal_index.length >= 5){
+                for(int k=0; k<signal_index.length; k++){
+                    buffer.add(scanResults2.get(signal_index[k]));
+                }
                 correct_scan_counter += 1;
                 str += "APinfo.txt 안에 상위 5개의 wifi 신호 정보\n";
                 scan_final =""; //초기화
                 for (int k = 0; k<5; k ++){
-                    str += final_results.get(k).SSID + ", "; // service set id
-                    str += final_results.get(k).BSSID + ", "; //wifi ap의 주소
-                    str += final_results.get(k).frequency + "MHz , ";
-                    str += final_results.get(k).level + "dBm";
-                    float curr_p = final_results.get(k).level;
+                    str += buffer.get(k).SSID + ", "; // service set id
+                    str += buffer.get(k).BSSID + ", "; //wifi ap의 주소
+                    str += buffer.get(k).frequency + "MHz , ";
+                    str += buffer.get(k).level + "dBm";
+                    float curr_p = buffer.get(k).level;
                     dist =(float)Math.pow(10, ((P0 - curr_p) / (10 * eta)));
                     str += String.format(", distance: %.2fm\n", dist);
-                    scan_final += final_results.get(k).BSSID+"," + String.format("%.2f\n", dist);
+                    //scan_final에 (addr, 경로손실모델로 계산한 dist) 형태로 저장
+                    scan_final += buffer.get(k).BSSID+"," + String.format("%.2f\n", dist);
                 }
                 file.save_str_to_file(str);
                 Log.d(TAG, "[UPDATE]WIFI_sensor_txt");
 
                 file.save_str_to_file("\nscan_final\n" + scan_final);
-                positioning.getScan_final(scan_final);
+                positioning.getScan_final(scan_final); //positioning에 data 넘겨줌
+                //첫번째 스캔인 경우 positioning start 함수 실행
                 if(correct_scan_counter == 1){
                     positioning.start(scan_final);
                 }
@@ -147,20 +166,21 @@ public class WifiModule {
                 // 나중에 구현
             }
             else{
-                //신호 세기 상위 5개의 정보 출력
-                int [] signal_index2 = selectAPs(scanResults);
+                //신호 세기 상위 10개의 정보 출력
+                int [] signal_index3 = alignAPs(scanResults);
                 str += "상위 5개의 wifi 신호 정보\n";
+                scan_final =""; //초기화
                 for (int k = 0; k<5; k ++){
-                    scan_final =""; //초기화
-                    str += scanResults.get(signal_index2[k]).SSID + ", "; // service set id
-                    str += scanResults.get(signal_index2[k]).BSSID + ", "; //wifi ap의 주소
-                    str += scanResults.get(signal_index2[k]).frequency + "MHz , ";
-                    str += scanResults.get(signal_index2[k]).level + "dBm";
+                    str += scanResults.get(signal_index3[k]).SSID + ", "; // service set id
+                    str += scanResults.get(signal_index3[k]).BSSID + ", "; //wifi ap의 주소
+                    str += scanResults.get(signal_index3[k]).frequency + "MHz , ";
+                    str += scanResults.get(signal_index3[k]).level + "dBm";
 
-                    float curr_p = scanResults.get(signal_index2[k]).level;
+                    float curr_p = scanResults.get(signal_index3[k]).level;
                     dist =(float)Math.pow(10, ((P0 - curr_p) / (10 * eta)));
                     str += String.format(", distance: %.2fm\n", dist);
-                    scan_final += scanResults.get(signal_index2[k]).BSSID+"," + String.format("%.2f\n", dist);
+                    scan_final += scanResults.get(signal_index3[k]).BSSID+"," + String.format("%.2f\n", dist);
+
                 }
                 file.save_str_to_file(str);
                 Log.d(TAG, "[UPDATE]WIFI_sensor_txt");
@@ -171,8 +191,8 @@ public class WifiModule {
             }
         }
 
-        //신호 세기 중 상위 3개 요소의 scanResult 인덱스 리턴
-        private int[] selectAPs(List<ScanResult> scanResults){
+        //신호 세기 순으로 scanResult의 인덱스 배열 반환
+        private int[] alignAPs(List<ScanResult> scanResults){
             Map<Integer, Integer> signalMap = new HashMap<>();
             int [] signal_index = new int[scanResults.size()];
             int [] signal_indexs = new int[scanResults.size()];
@@ -197,6 +217,7 @@ public class WifiModule {
             for(int i = 0; i<scanResults.size() ; i++ ){
                 signal_index[i] = signal_indexs[scanResults.size()-i-1];
             }
+
             Log.d("signalMap2", Arrays.toString(signal_index) + "Update");
             return signal_index;
         }
@@ -207,12 +228,7 @@ public class WifiModule {
             int count = 0;
             for(int i = 0; i < scanResults.size(); i++){
                 for( int j = 0; j< wifiAPManager.apInfoList.size(); j ++){
-                    if (scanResults.get(i).BSSID.equals(wifiAPManager.apInfoList.get(j).mac_addr1)){
-                        i = new Integer(i);
-                        signal_index.add(i);
-                        count ++;
-                    }
-                    else if (scanResults.get(i).BSSID.equals(wifiAPManager.apInfoList.get(j).mac_addr2)){
+                    if (scanResults.get(i).BSSID.equals(wifiAPManager.apInfoList.get(j).mac_addr2)){
                         i = new Integer(i);
                         signal_index.add(i);
                         count ++;
@@ -226,27 +242,30 @@ public class WifiModule {
             }
             return scanResults2;
         }
-        private List<ScanResult> filterResult(List <ScanResult> scanResults){
-            int [] check = new int[wifiAPManager.apInfoList.size()];
-            List<ScanResult> filterresults = new ArrayList<>();
-            Arrays.fill(check, 0);
-            for(int i =0; i < scanResults.size(); i ++){
-                for(int j =0; j < wifiAPManager.apInfoList.size(); j++){
-                    if(scanResults.get(i).BSSID.equals(wifiAPManager.apInfoList.get(j).mac_addr1)){
-                        if(check[j] != 1){
-                            filterresults.add(scanResults.get(i));
-                            check[j] = 1;
-                        }
-                    }
-                    else if(scanResults.get(i).BSSID.equals(wifiAPManager.apInfoList.get(j).mac_addr2)){
-                        if(check[j] != 1){
-                            filterresults.add(scanResults.get(i));
-                            check[j] = 1;
-                        }
-                    }
-                }
-            }
-            return filterresults;
-        }
+        //2.4G만 사용하면 필요없음
+        //세기 순으로 나열된 Data 중 addr만 다르고 AP위치 같을 경우 하나로 취급해야함
+        // 2.4G, 5G만 다르고 같은 AP가 있으면 걸러주는 함수
+//        private List<ScanResult> filterResult(List <ScanResult> scanResults){
+//            int [] check = new int[wifiAPManager.apInfoList.size()];
+//            List<ScanResult> filterresults = new ArrayList<>();
+//            Arrays.fill(check, 0);
+//            for(int i =0; i < scanResults.size(); i ++){
+//                for(int j =0; j < wifiAPManager.apInfoList.size(); j++){
+//                    if(scanResults.get(i).BSSID.equals(wifiAPManager.apInfoList.get(j).mac_addr1)){
+//                        if(check[j] != 1){
+//                            filterresults.add(scanResults.get(i));
+//                            check[j] = 1;
+//                        }
+//                    }
+//                    else if(scanResults.get(i).BSSID.equals(wifiAPManager.apInfoList.get(j).mac_addr2)){
+//                        if(check[j] != 1){
+//                            filterresults.add(scanResults.get(i));
+//                            check[j] = 1;
+//                        }
+//                    }
+//                }
+//            }
+//            return filterresults;
+//        }
     }
 }

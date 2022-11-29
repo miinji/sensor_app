@@ -38,22 +38,20 @@ public class WifiAPManager {
 
 
     class APInfo{
-        public String name, mac_addr1, mac_addr2;
+        public String name, mac_addr, mac_addr2;
         public float x, y;
-        public float scale;
 
         public APInfo(String line){
             String[] items = line.split(",");
             name =items[0];
             x = Float.parseFloat(items[3]);
             y = Float.parseFloat(items[4]);
-            mac_addr1 = items[1];
+            mac_addr = items[1];
             mac_addr2 = items[2];
-
             validate();
         }
         private void validate(){
-            Log.d("APInfo", String.format("name: %s, mac:%s %s, x:%f, y:%f",name, mac_addr1, mac_addr2,x, y));
+            Log.d("APInfo", String.format("name: %s, mac:%s, x:%f, y:%f",name, mac_addr, x, y));
         }
     }
 }
