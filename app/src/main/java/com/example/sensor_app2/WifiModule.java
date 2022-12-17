@@ -36,7 +36,7 @@ public class WifiModule {
     int scan_counter = 0; //몇번째 스캔을 진행하였는지
     int correct_scan_counter = 0; //제대로 신호가 들어왔을 때의 scan_counter
     long last_scan_time_ms = elapsedRealtime();
-    final int scan_interval_ms = 5000; //5초 마다 스캔
+    final int scan_interval_ms = 3000; //5초 마다 스캔
 
     // 스레드 관련
     Looper wifi_scan_looper;
@@ -106,8 +106,8 @@ public class WifiModule {
             // level dbm scale로 변환된 신호의 세기를 알려줌
             List<ScanResult> scanResults = wifiManager.getScanResults(); //하나의 ap에서 온 신호를 리스트로
             List <ScanResult> buffer = new ArrayList<>();
-            float P0 = -30;
-            float eta = 2;
+            float P0 = -40;
+            float eta = 3;
             float dist;
 
             String str = "";
@@ -116,7 +116,7 @@ public class WifiModule {
             int [] signal_index2 = alignAPs(scanResults);
             str += "상위 10개의 wifi 신호 정보\n";
             scan_final =""; //초기화
-            for (int k = 0; k<10; k ++){
+            for (int k = 0; k<5; k ++){
                 str += scanResults.get(signal_index2[k]).SSID + ", "; // service set id
                 str += scanResults.get(signal_index2[k]).BSSID + ", "; //wifi ap의 주소
                 str += scanResults.get(signal_index2[k]).frequency + "MHz , ";
@@ -127,7 +127,6 @@ public class WifiModule {
                 str += String.format(", distance: %.2fm\n", dist);
 
             }
-
 
             //scanResults중 APinfo에 저장된 값만 추출하여 배열
             List<ScanResult> scanResults2 = checkAPs(wifiAPManager, scanResults);
@@ -166,7 +165,7 @@ public class WifiModule {
                 // 나중에 구현
             }
             else{
-                //신호 세기 상위 10개의 정보 출력
+                //신호 세기 상위 5개의 정보 출력
                 int [] signal_index3 = alignAPs(scanResults);
                 str += "상위 5개의 wifi 신호 정보\n";
                 scan_final =""; //초기화
@@ -242,7 +241,7 @@ public class WifiModule {
             }
             return scanResults2;
         }
-        //2.4G만 사용하면 필요없음
+        //5G만 사용하면 필요없음
         //세기 순으로 나열된 Data 중 addr만 다르고 AP위치 같을 경우 하나로 취급해야함
         // 2.4G, 5G만 다르고 같은 AP가 있으면 걸러주는 함수
 //        private List<ScanResult> filterResult(List <ScanResult> scanResults){

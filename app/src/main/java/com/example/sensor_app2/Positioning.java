@@ -51,7 +51,7 @@ public class Positioning {
             }
         };
         //칼만필터 초기화 후 6초 기다렸다가 5초마다 run실행
-        timer.schedule(task, 6000, 5000);
+        timer.schedule(task, 4000, 3000);
     }
 
     //wifiModule에서 받은 scan_final을 scanData로 저장
@@ -255,7 +255,6 @@ public class Positioning {
             ((MainActivity)MainActivity.mContext).getY(past_y);
 
             Log.d(TAG, String.valueOf(past_x) + ", " + String.valueOf(past_y));
-
         }
     }
 }

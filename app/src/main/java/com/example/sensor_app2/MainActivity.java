@@ -133,6 +133,7 @@ public class MainActivity extends AppCompatActivity {
 
         if(flag_running){
             float deg = sensorModule.get_heading();
+//            imageModule.plot_arrow((float) (91.94864 *18.2), (float) (89.03932*18.2),deg);
             imageModule.plot_arrow(X,Y, deg);
             Log.d("image", X + ", " + Y);
 
@@ -202,8 +203,8 @@ public class MainActivity extends AppCompatActivity {
             }
         is_permission_granted = true;
     }
-    public void getX(double num){ X = (float) ((float)num * 11); }
+    public void getX(double num){ X = (float) ((float)num * 18.2); }
     public void getY(double num){
-        Y = (float) ((float)num * 11);
+        Y = (float) ((float)num * 18.2);
     }
 }
