@@ -51,7 +51,7 @@ public class Positioning {
             }
         };
         //칼만필터 초기화 후 6초 기다렸다가 5초마다 run실행
-        timer.schedule(task, 4000, 3000);
+        timer.schedule(task, 1500, 1000);
     }
 
     //wifiModule에서 받은 scan_final을 scanData로 저장
@@ -124,8 +124,6 @@ public class Positioning {
                 preData = scanData;
             }
         }
-
-
         //공분산 행렬
 //        public Matrix Make_cov_Matrix(double [] x_val, double [] y_val){
 //            double tmp_x = 0;
@@ -171,12 +169,12 @@ public class Positioning {
             data = selectAPs(lines);
 
             //sigma_tr 1 ~ 2 정도의 값
-            double sigma_tr = 1.5;
+            double sigma_tr = 2;
             double [][] vals_tr = {{sigma_tr,0},{0,sigma_tr}};
             Matrix sigma_tr_Matrix = new Matrix(vals_tr);
 
-            //Wk의 diag행렬 - wk의 공분산 행렬
-            double sn_k = 1.5; //1 ~ 2의 값으로 진행
+            //Wk의 diag행렬 - wk의 공분산 행렬ss
+            double sn_k = 2; //1 ~ 2의 값으로 진행
             double [][] val_diag ={{sn_k,0,0,0,0},{0,sn_k,0,0,0},{0,0,sn_k,0,0},{0,0,0,sn_k,0},{0,0,0,0,sn_k}};
 
             //identity matrix

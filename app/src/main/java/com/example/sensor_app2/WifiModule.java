@@ -36,11 +36,10 @@ public class WifiModule {
     int scan_counter = 0; //몇번째 스캔을 진행하였는지
     int correct_scan_counter = 0; //제대로 신호가 들어왔을 때의 scan_counter
     long last_scan_time_ms = elapsedRealtime();
-    final int scan_interval_ms = 3000; //5초 마다 스캔
+    final int scan_interval_ms = 1000; //5초 마다 스캔
 
     // 스레드 관련
     Looper wifi_scan_looper;
-
     // 마지막 실행
     String current_state = "";
 
@@ -69,6 +68,7 @@ public class WifiModule {
         //wifi 측정 시작
         flag_running = true;
         scan_counter = 0;
+        correct_scan_counter = 0;
         file = file_in;
         file.remove_file();
         invoke_wifi_scan_thread(); // 처음은 UI thread에서 실행 나중에는 새로운 스레드에서 무한 반복
@@ -161,7 +161,7 @@ public class WifiModule {
                 if(correct_scan_counter == 1){
                     positioning.start(scan_final);
                 }
-                current_state = "Scan counter: " + scan_counter + ", # APs: " + scanResults.size();
+                current_state = "Scan counter: " + correct_scan_counter + ", # APs: " + scanResults.size();
                 // 나중에 구현
             }
             else{
@@ -184,8 +184,8 @@ public class WifiModule {
                 file.save_str_to_file(str);
                 Log.d(TAG, "[UPDATE]WIFI_sensor_txt");
                 file.save_str_to_file("\nscan_final\n" + scan_final);
-                Toast.makeText(MyApplication.ApplicationContext(), "[ERROR]Move into the KNU_library!", Toast.LENGTH_SHORT).show();
-                current_state = "Scan counter: " + scan_counter + ", # APs: " + scanResults.size();
+                Toast.makeText(MyApplication.ApplicationContext(), "[ERROR]The signal is weak! Move into the KNU_library!", Toast.LENGTH_SHORT).show();
+                current_state = "Scan counter: " + correct_scan_counter + ", # APs: " + scanResults.size();
                 // 나중에 구현
             }
         }

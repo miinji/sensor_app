@@ -77,9 +77,9 @@ public class ImageModule implements View.OnTouchListener{
         imageView.setImageBitmap(bitmap_altered);
 
         // 화살표 그림을 가져옴
-        arrow = BitmapFactory.decodeResource(activity.getResources(), R.raw.arrow);
+        arrow = BitmapFactory.decodeResource(activity.getResources(), R.raw.rec);
         plot_arrow(1000, 500, 60);
-        findDPI();
+        //findDPI();
     }
 
     //화살표 그리는 method
@@ -87,7 +87,7 @@ public class ImageModule implements View.OnTouchListener{
         canvas.drawBitmap(bitmap, 0, 0, null);
         Matrix matrix = new Matrix();
         matrix.postScale(0.3f, 0.3f);
-        matrix.postRotate(deg);
+        //matrix.postRotate(deg);
         Bitmap rotated_arrow = Bitmap.createBitmap(arrow, 0, 0, arrow.getWidth(), arrow.getHeight(), matrix, true);
 
         canvas.drawBitmap(rotated_arrow, x, y, null);

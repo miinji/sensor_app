@@ -133,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
 
         if(flag_running){
             float deg = sensorModule.get_heading();
-//            imageModule.plot_arrow((float) (91.94864 *18.2), (float) (89.03932*18.2),deg);
+//            imageModule.plot_arrow((float) (1000), (float) (1000),deg);
             imageModule.plot_arrow(X,Y, deg);
             Log.d("image", X + ", " + Y);
 
@@ -203,8 +203,11 @@ public class MainActivity extends AppCompatActivity {
             }
         is_permission_granted = true;
     }
-    public void getX(double num){ X = (float) ((float)num * 18.2); }
+    public void getX(double num){
+        // m -> mm (/0.0792) -> pix (* 3.78) -> 압축 비율 /4
+        X = (float) ((float)num / 0.0792 * 3.78 / 4);
+        }
     public void getY(double num){
-        Y = (float) ((float)num * 18.2);
+        Y = (float) ((float)num / 0.0792 * 3.78  / 4);
     }
 }
